@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>狼人杀 - 游戏房间</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(to bottom right, #87CEEB, #4682B4);
+        }
+     .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 600px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        p {
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            background-color: #f0f0f0;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        li.owner {
+            font-weight: bold;
+            color: #2E8B57;
+        }
+     .back-link {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+        }
+     .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <a href="#" id="back-home" class="back-link">返回首页</a>
+    <div class="container">
+        <h1>狼人杀房间</h1>
+        <p id="roomInfo">房间号：<span id="roomNumber"></span></p>
+        <div id="error-message" class="error-message"></div>
+        <ul id="playerList">
+            <li><div id="player-list"></div></li>
+        </ul>
+    </div>
+    <script>
+        async function fetchPlayerList() {
+            // 通过 URL 的查询参数获取房间号
+            const roomId = new URLSearchParams(window.location.search).get('roomId');
+            if (!roomId) {
+                displayErrorMessage('未获取到房间号');
+                return;
+            }
+            try {
+                const response = await fetch(`getRoomInfo.php?roomId=${roomId}`);
+                if (!response.ok) {
+                    throw new Error('网络响应错误');
+                }
+                const data = await response.json();
+                if (data.error) {
+                    displayErrorMessage(data.error);
+                } else {
+                    displayRoomInfo(data.roomInfo);
+                    displayPlayerList(data.playerList);
+                }
+            } catch (error) {
+                console.error('获取玩家列表时出错:', error);
+                displayErrorMessage('获取玩家列表时出错，请稍后重试');
+            }
+        }
+
+
+        function displayErrorMessage(message) {
+            const errorDiv = document.getElementById('error-message');
+            if (!errorDiv) {
+                const div = document.createElement('div');
+                div.id = 'error-message';
+                div.className = 'error-message';
+                document.body.appendChild(div);
+            }
+            document.getElementById('error-message').textContent = message;
+        }
+
+
+        function displayRoomInfo(roomInfo) {
+            const roomNumberSpan = document.getElementById('roomNumber');
+            if (roomInfo && roomInfo.room_number) {
+                roomNumberSpan.textContent = roomInfo.room_number;
+            }
+        }
+
+
+        function displayPlayerList(playerList) {
+            const playerListDiv = document.getElementById('player-list');
+            if (!playerListDiv) {
+                const div = document.createElement('div');
+                div.id = 'player-list';
+                div.className = 'player-list';
+                document.body.appendChild(div);
+            }
+            let playerItems = '';
+            playerList.forEach(player => {
+                const ownerClass = player.is_owner === 1? 'owner' : '';
+                playerItems += `<li class="${ownerClass}">玩家名称: ${player.player_name}, 状态: ${player.status}</li>`;
+            });
+            document.getElementById('player-list').innerHTML = playerItems;
+        }
+
+
+        async function exitRoom() {
+            // 通过 URL 的查询参数获取房间号
+            const roomId = new URLSearchParams(window.location.search).get('roomId');
+            if (!roomId) {
+                displayErrorMessage('未获取到房间号');
+                return;
+            }
+            try {
+                const response = await fetch(`quitRoom.php?roomId=${roomId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                if (!response.ok) {
+                    throw new Error('网络响应错误');
+                }
+                const data = await response.json();
+                if (data.error) {
+                    displayErrorMessage(data.error);
+                } else {
+                    window.location.href = 'index.html';
+                }
+            } catch (error) {
+                console.error('退出房间时出错:', error);
+                displayErrorMessage('退出房间时出错，请稍后重试');
+            }
+        }
+
+
+        document.getElementById('back-home').addEventListener('click', exitRoom);
+
+
+        // 页面加载时调用 fetchPlayerList 函数
+        window.onload = fetchPlayerList;
+    </script>
+</body>
+</html>

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>狼人杀 - 房间列表</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: pink;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+.container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 800px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+.error-message {
+            color: red;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+.no-rooms-message {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+.room-list {
+            display: flex;
+            flex-wrap: nowrap;
+            flex-direction: column;
+            justify-content: center;
+            gap: 10px;
+            padding: 0;
+        }
+.room-card {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            flex-basis: 100%;
+            box-sizing: border-box;
+            transition: transform 0.3s ease;
+        }
+.room-card:hover {
+            transform: scale(1.05);
+        }
+.room-card h2 {
+            color: #333;
+            margin: 0 0 8px 0;
+            font-size: 18px;
+        }
+.room-card p {
+            margin: 3px 0;
+            font-size: 14px;
+        }
+.room-card p:last-child {
+            margin-bottom: 0;
+        }
+.back-link {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+        }
+.back-link:hover {
+            text-decoration: underline;
+        }
+.refresh-button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #2E8B57;
+            color: white;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+.refresh-button:hover {
+            background-color: #228B22;
+        }
+    @media (max-width: 768px) {
+.room-list {
+            flex-direction: column;
+        }
+    }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">返回首页</a>
+    <div class="container">
+        <h1>狼人杀房间列表</h1>
+        <div id="error-message" class="error-message"></div>
+        <div id="no-rooms-message" class="no-rooms-message"></div>
+        <div class="room-list" id="roomList"></div>
+        <button id="refreshButton" class="refresh-button">刷新</button>
+    </div>
+    <script>
+        let currentPage = 1; // 当前页
+        const roomsPerPage = 4; // 每页显示的房间数
+
+
+        async function fetchRoomList() {
+            try {
+                const url = 'listRooms.php';
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error('网络响应错误');
+                }
+                const data = await response.json();
+                if (data.error) {
+                    displayErrorMessage(data.error);
+                } else {
+                    displayRoomList(data.rooms);
+                }
+            } catch (error) {
+                console.error('获取房间列表时出错:', error);
+                displayErrorMessage('获取房间列表时出错，请稍后重试');
+            }
+        }
+
+
+        function displayErrorMessage(message) {
+            const errorDiv = document.getElementById('error-message');
+            if (!errorDiv) {
+                const div = document.createElement('div');
+                div.id = 'error-message';
+                div.className = 'error-message';
+                document.body.appendChild(div);
+            }
+            document.getElementById('error-message').textContent = message;
+        }
+
+
+        function displayRoomList(roomList) {
+            const roomListDiv = document.getElementById('roomList');
+            const noRoomsMessageDiv = document.getElementById('no-rooms-message');
+            if (!roomListDiv) {
+                const div = document.createElement('div');
+                div.id = 'roomList';
+                div.className = 'room-list';
+                document.body.appendChild(div);
+            }
+            let roomsHtml = '';
+            const startIndex = (currentPage - 1) * roomsPerPage;
+            const endIndex = startIndex + roomsPerPage;
+            const roomsToShow = roomList.slice(startIndex, endIndex);
+
+
+            if (roomList.length === 0) {
+                noRoomsMessageDiv.textContent = '没有找到房间';
+            } else {
+                noRoomsMessageDiv.textContent = '';
+                roomsToShow.forEach(room => {
+                    roomsHtml += `
+                        <div class="room-card">
+                            <h2>房间号: ${room.room_number}</h2>
+                            <p>房间名称: ${room.name}</p>
+                            <p>${room.max_players} / ${room.players.length}</p>
+                            <p>房主昵称: ${room.host_nickname}</p>
+                        </div>
+                    `;
+                });
+            }
+            document.getElementById('roomList').innerHTML = roomsHtml;
+        }
+
+
+        function changePage(page) {
+            currentPage = page;
+            fetchRoomList();
+        }
+
+
+        document.getElementById('refreshButton').addEventListener('click', () => {
+            fetchRoomList();
+        });
+
+
+        // 页面加载时调用 fetchRoomList 函数
+        window.onload = fetchRoomList;
+    </script>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>狼人杀 - 创建房间</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(to bottom right, #FFA500, #FFD700);
+        }
+.container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 400px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        input {
+            display: block;
+            margin: 15px auto;
+            padding: 12px;
+            width: 250px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+        input:focus {
+            border-color: #FFA500;
+        }
+        button {
+            display: block;
+            margin: 20px auto;
+            padding: 12px 20px;
+            width: 250px;
+            background-color: #FFA500;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #FF8C00;
+        }
+.message {
+            color: red;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+.back-link {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+        }
+.back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">返回首页</a>
+    <div class="container">
+        <h1>创建狼人杀房间</h1>
+        <form id="createRoomForm">
+            <input type="text" name="room_name" id="roomNameInput" placeholder="输入房间名称" required>
+            <input type="hidden" type="number" name="max_players" id="maxPlayersInput" placeholder="输入最大玩家数" value="10" required min="6" max="12">
+            <button type="submit">创建房间</button>
+        </form>
+        <div class="message" id="errorMessage"></div>
+    </div>
+    <script>
+        document.getElementById('createRoomForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            var roomName = document.getElementById('roomNameInput').value;
+            var maxPlayers = document.getElementById('maxPlayersInput').value;
+            if (roomName === '' || maxPlayers === '') {
+                displayErrorMessage('请输入房间名称和最大玩家数');
+                return;
+            }
+            var formData = new FormData(this);
+            fetch('createRoom.php', {
+                method: 'POST',
+                body: formData
+            })
+        .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok'+ response.statusText);
+                    }
+                    return response.json();
+                })
+        .then(data => {
+                    console.log(data); // 打印服务器响应数据，用于调试
+                    if (data.error) {
+                        displayErrorMessage(data.error);
+                    } else if (data.success) {
+                        if (data.roomId) {
+                            // 假设创建成功后跳转到新的页面，例如房间页面
+                            window.location.href = 'room.html?room=' + data.roomId;
+                            // 连接 WebSocket 并发送房间号
+                            connectWebSocket(data.roomId);
+                        } else {
+                            displayErrorMessage('未收到房间号，请检查服务器响应');
+                        }
+                    } else {
+                        displayErrorMessage('发生未知错误，请重试');
+                    }
+                })
+        .catch(error => {
+                    displayErrorMessage('发生错误:'+ error);
+                });
+        });
+
+        function displayErrorMessage(message) {
+            var errorMessageDiv = document.getElementById('errorMessage');
+            errorMessageDiv.innerHTML = message;
+            errorMessageDiv.style.display = 'block';
+        }
+
+        function connectWebSocket(roomId) {
+            const socket = new WebSocket('ws://47.100.225.246:8080');
+            socket.onopen = function(event) {
+                console.log('连接到WebSocket服务器。');
+                // 发送房间号
+                socket.send(JSON.stringify({ roomId: roomId }));
+            };
+            socket.onmessage = function(event) {
+                console.log('来自服务器的消息:', event.data);
+                // 在这里处理服务器发送的消息
+            };
+            socket.onerror = function(error) {
+                console.error('WebSocket错误:', error);
+            };
+            socket.onclose = function(event) {
+                console.log('WebSocket连接已关闭:', event);
+            };
+        }
+    </script>
+</body>
+</html>

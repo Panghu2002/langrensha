@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>狼人杀 - 游戏进行中</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(to bottom right, #4B0082, #8A2BE2);
+        }
+ .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 800px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        p {
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            background-color: #f0f0f0;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        button {
+            display: block;
+            margin: 20px auto;
+            padding: 12px 20px;
+            width: 200px;
+            background-color: #8A2BE2;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #4B0082;
+        }
+ .exit-link {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+        }
+ .exit-link:hover {
+            text-decoration: underline;
+        }
+ .player-status {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 30px;
+        }
+ .player-status div {
+            padding: 10px;
+            background-color: #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="exit-link">退出房间</a>
+    <div class="container">
+        <h1>狼人杀游戏进行中</h1>
+        <p>欢迎来到狼人杀游戏，祝你玩得愉快！</p>
+        <div class="player-status">
+            <div>
+                <h2>存活玩家</h2>
+                <ul id="alivePlayers">
+                    <li>玩家列表将在此显示</li>
+                </ul>
+            </div>
+            <div>
+                <h2>淘汰玩家</h2>
+                <ul id="deadPlayers">
+                    <li>淘汰玩家列表将在此显示</li>
+                </ul>
+            </div>
+        </div>
+        <button onclick="nightAction()">进入黑夜</button>
+        <button onclick="dayAction()">进入白天</button>
+    </div>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const roomId = urlParams.get('roomId');
+        const socket = new WebSocket(`ws://47.100.225.246:8080?roomId=${roomId}`);
+
+        socket.onopen = function(event) {
+            console.log('Connected to the WebSocket server.');
+            // 发送一个初始请求，例如请求玩家列表
+            socket.send(JSON.stringify({ type: 'getPlayerList' }));
+        };
+
+        socket.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            if (data.type === 'playerList') {
+                displayPlayerList(data.players);
+            } else if (data.type === 'nightStart') {
+                // 处理黑夜开始的逻辑，例如更新界面显示黑夜开始
+                console.log('Night has started.');
+            } else if (data.type === 'dayStart') {
+                // 处理白天开始的逻辑，例如更新界面显示白天开始
+                console.log('Day has started.');
+            }
+        };
+
+        socket.onerror = function(error) {
+            console.error('WebSocket error:', error);
+        };
+
+        socket.onclose = function(event) {
+            console.log('WebSocket connection closed:', event);
+        };
+
+        function displayPlayerList(players) {
+            const aliveList = document.getElementById('alivePlayers');
+            const deadList = document.getElementById('deadPlayers');
+            aliveList.innerHTML = '';
+            deadList.innerHTML = '';
+            players.forEach(player => {
+                const playerItem = document.createElement('li');
+                playerItem.innerText = player;
+                aliveList.appendChild(playerItem);
+            });
+        }
+
+        function nightAction() {
+            // 向服务器发送进入黑夜的请求
+            socket.send(JSON.stringify({ type: 'startNight' }));
+        }
+
+        function dayAction() {
+            // 向服务器发送进入白天的请求
+            socket.send(JSON.stringify({ type: 'startDay' }));
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>狼人杀</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            background: linear-gradient(to bottom right, #4CAF50, #8BC34A); /* 改变背景渐变颜色 */
+            font-family: 'Helvetica Neue', sans-serif; /* 更改字体 */
+        }
+  .container {
+            text-align: center;
+            background-color: white;
+            padding: 30px; /* 增加内边距 */
+            border-radius: 15px; /* 增加边框圆角 */
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3); /* 增加阴影效果 */
+            animation: fadeIn 1s ease-in-out; /* 添加淡入动画 */
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        img {
+            width: 120px; /* 增加图片大小 */
+            height: 120px;
+            margin-bottom: 30px; /* 增加底部外边距 */
+            border-radius: 50%; /* 将图片变成圆形 */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); /* 给图片添加阴影 */
+        }
+        h1 {
+            font-size: 30px; /* 增大标题字体大小 */
+            margin-bottom: 40px; /* 增加底部外边距 */
+            color: #333; /* 改变标题颜色 */
+        }
+        button {
+            display: block;
+            width: 200px; /* 增大按钮宽度 */
+            margin: 15px auto; /* 调整按钮外边距 */
+            padding: 15px; /* 增加按钮内边距 */
+            font-size: 18px; /* 增大按钮字体大小 */
+            border: 2px solid #ccc; /* 增加按钮边框宽度 */
+            border-radius: 8px; /* 增大按钮边框圆角 */
+            background-color: white;
+            cursor: pointer;
+            transition: all 0.3s ease; /* 添加过渡效果 */
+        }
+        button:hover {
+            background-color: #f0f0f0; /* 鼠标悬停时改变按钮背景颜色 */
+            transform: scale(1.05); /* 鼠标悬停时按钮放大 */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="/logo.png" alt="狼人杀图标">
+        <h1>狼人杀</h1>
+        <button onclick="joinRoom()">加入房间</button>
+        <button onclick="createRoom()">创建房间</button>
+        <button onclick="listRoom()">房间列表</button>
+        <button onclick="viewRecords()">查看游戏记录</button>
+    </div>
+    <script>
+        function joinRoom() {
+            window.location.href = 'joinRoom.html';
+        }
+        function createRoom() {
+            window.location.href = 'createRoom.html';
+        }
+        function listRoom() {
+            window.location.href = 'listRoom.html';
+        }
+        function viewRecords() {
+            alert("该功能正在开发中，暂时无法查看记录，请稍后再试。");
+            // window.location.href = 'Replay.html';
+        }
+    </script>
+</body>
+</html>

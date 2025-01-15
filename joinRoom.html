@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>狼人杀 - 加入房间</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(to bottom right, #FFA500, #FFD700);
+        }
+     .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 400px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        input {
+            display: block;
+            margin: 15px auto;
+            padding: 12px;
+            width: 250px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+        input:focus {
+            border-color: #FFA500;
+        }
+        button {
+            display: block;
+            margin: 20px auto;
+            padding: 12px 20px;
+            width: 250px;
+            background-color: #FFA500;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #FF8C00;
+        }
+     .message {
+            color: red;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+     .back-link {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+        }
+     .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">返回首页</a>
+    <div class="container">
+        <h1>加入狼人杀房间</h1>
+        <form id="joinRoomForm">
+            <input type="text" name="roomId" id="roomIdInput" placeholder="输入房间 ID" required>
+            <button type="submit">加入房间</button>
+        </form>
+        <div class="message" id="errorMessage"></div>
+    </div>
+    <script>
+        document.getElementById('joinRoomForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            var roomId = document.getElementById('roomIdInput').value;
+            if (roomId === '') {
+                displayErrorMessage('请输入房间 ID');
+                return;
+            }
+            var formData = new FormData(this);
+            fetch('joinRoom.php', {
+                method: 'POST',
+                body: formData
+            })
+     .then(response => {
+                    if (!response.ok) {
+                        throw new Error('网络响应异常' + response.statusText);
+                    }
+                    return response.json();
+                })
+     .then(data => {
+                    if (data.error) {
+                        displayErrorMessage(data.error);
+                    } else if (data.success) {
+                        displaySuccessMessage(data.message);
+                    } else {
+                        displayErrorMessage('发生未知错误，请重试');
+                    }
+                })
+     .catch(error => {
+                    displayErrorMessage('发生错误:' + error);
+                });
+        });
+
+        function displayErrorMessage(message) {
+            var errorMessageDiv = document.getElementById('errorMessage');
+            errorMessageDiv.innerHTML = message;
+            errorMessageDiv.style.display = 'block';
+        }
+
+        function displaySuccessMessage(message) {
+            var successMessageDiv = document.createElement('div');
+            successMessageDiv.innerHTML = message;
+            successMessageDiv.style.display = 'block';
+            successMessageDiv.style.color = 'green';
+            successMessageDiv.style.marginTop = '15px';
+            successMessageDiv.style.fontSize = '14px';
+            document.querySelector('.container').appendChild(successMessageDiv);
+        }
+    </script>
+</body>
+</html>
